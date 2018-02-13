@@ -423,7 +423,7 @@ void A3::renderSceneGraph(const SceneNode & root) {
 void A3::renderGraph(const SceneNode &root, glm::mat4 modelMatrix) {
 	list<SceneNode*> children = root.children;
 
-	glm::mat4 oldModelMatrix = modelMatrix;
+	renderNode(root, modelMatrix);
 
 	if (root.m_nodeType == NodeType::SceneNode) {
 		modelMatrix = modelMatrix * root.trans;
@@ -437,8 +437,6 @@ void A3::renderGraph(const SceneNode &root, glm::mat4 modelMatrix) {
 			renderGraph(**it, modelMatrix);
                 }
         }
-
-        renderNode(root, oldModelMatrix);
 }
 
 void A3::renderNode(const SceneNode &node, glm::mat4 modelMatrix) {
