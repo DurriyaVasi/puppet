@@ -344,14 +344,15 @@ void A3::guiLogic()
 static void updateShaderUniforms(
 		const ShaderProgram & shader,
 		const GeometryNode & node,
-		const glm::mat4 & viewMatrix
+		const glm::mat4 & viewMatrix,
+		const glm::mat4 & modelMatrix
 ) {
 
 	shader.enable();
 	{
 		//-- Set ModelView matrix:
 		GLint location = shader.getUniformLocation("ModelView");
-		mat4 modelView = viewMatrix * node.trans;
+		mat4 modelView = viewMatrix * modelMatrix * node.trans;
 		glUniformMatrix4fv(location, 1, GL_FALSE, value_ptr(modelView));
 		CHECK_GL_ERRORS;
 
@@ -413,27 +414,49 @@ void A3::renderSceneGraph(const SceneNode & root) {
 	// could put a set of mutually recursive functions in this class, which
 	// walk down the tree from nodes of different types.
 
-	for (const SceneNode * node : root.children) {
-
-		if (node->m_nodeType != NodeType::GeometryNode)
-			continue;
-
-		const GeometryNode * geometryNode = static_cast<const GeometryNode *>(node);
-
-		updateShaderUniforms(m_shader, *geometryNode, m_view);
-
-
-		// Get the BatchInfo corresponding to the GeometryNode's unique MeshId.
-		BatchInfo batchInfo = m_batchInfoMap[geometryNode->meshId];
-
-		//-- Now render the mesh:
-		m_shader.enable();
-		glDrawArrays(GL_TRIANGLES, batchInfo.startIndex, batchInfo.numIndices);
-		m_shader.disable();
-	}
+	renderGraph(root, mat4());
 
 	glBindVertexArray(0);
 	CHECK_GL_ERRORS;
+}
+
+void A3::renderGraph(const SceneNode &root, glm::mat4 modelMatrix) {
+	list<SceneNode*> children = root.children;
+
+	glm::mat4 oldModelMatrix = modelMatrix;
+
+	if (root.m_nodeType == NodeType::SceneNode) {
+		modelMatrix = modelMatrix * root.trans;
+	}
+	else if (root.m_nodeType == NodeType::GeometryNode) {
+                modelMatrix = modelMatrix * root.trans;
+        }
+
+        if (!children.empty()) {
+                for (list<SceneNode*>::iterator it = children.begin(); it != children.end(); ++it) {
+			renderGraph(**it, modelMatrix);
+                }
+        }
+
+        renderNode(root, oldModelMatrix);
+}
+
+void A3::renderNode(const SceneNode &node, glm::mat4 modelMatrix) {
+	if (node.m_nodeType == NodeType::GeometryNode) {
+
+        	const GeometryNode * geometryNode = static_cast<const GeometryNode *>(&node);
+
+        	updateShaderUniforms(m_shader, *geometryNode, m_view, modelMatrix);
+
+
+        	//Get the BatchInfo corresponding to the GeometryNode's unique MeshId.
+        	BatchInfo batchInfo = m_batchInfoMap[geometryNode->meshId];
+
+        	//-- Now render the mesh:
+        	m_shader.enable();
+        	glDrawArrays(GL_TRIANGLES, batchInfo.startIndex, batchInfo.numIndices);
+        	m_shader.disable();
+	}	
 }
 
 //----------------------------------------------------------------------------------------
