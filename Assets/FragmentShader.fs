@@ -24,6 +24,8 @@ uniform Material material;
 // Ambient light intensity for each RGB component.
 uniform vec3 ambientIntensity;
 
+uniform int pickingMode;
+uniform vec3 colour;
 
 vec3 phongModel(vec3 fragPosition, vec3 fragNormal) {
 	LightSource light = fs_in.light;
@@ -53,5 +55,10 @@ vec3 phongModel(vec3 fragPosition, vec3 fragNormal) {
 }
 
 void main() {
-	fragColour = vec4(phongModel(fs_in.position_ES, fs_in.normal_ES), 1.0);
+	if (pickingMode == 1) {
+		fragColour = vec4(colour, 1.0);
+	}
+	else if (pickingMode == 0) {
+		fragColour = vec4(phongModel(fs_in.position_ES, fs_in.normal_ES), 1.0);
+	}
 }

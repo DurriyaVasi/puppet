@@ -9,12 +9,14 @@
 
 #include <glm/glm.hpp>
 #include <memory>
+#include <map>
+#include <stack>
+#include <tuple>
 
 struct LightSource {
 	glm::vec3 position;
 	glm::vec3 rgbIntensity;
 };
-
 
 class A3 : public CS488Window {
 public:
@@ -44,6 +46,7 @@ protected:
 	void mapVboDataToVertexShaderInputLocations();
 	void initViewMatrix();
 	void initLightSources();
+	void initSelected(const SceneNode &root);
 
 	void initPerspectiveMatrix();
 	void uploadCommonSceneUniforms();
@@ -79,4 +82,11 @@ protected:
 	std::string m_luaSceneFile;
 
 	std::shared_ptr<SceneNode> m_rootNode;
+
+	bool pickingMode;
+	bool do_picking;
+	std::map<unsigned int, bool> selected; 
+	std::stack<glm::vec3> colours;
+	std::map<unsigned int, glm::vec3> idToColour;
+	std::map<std::tuple<float, float, float>, unsigned int> colourToId;
 };

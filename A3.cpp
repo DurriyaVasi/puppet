@@ -29,9 +29,15 @@ A3::A3(const std::string & luaSceneFile)
 	  m_vbo_vertexPositions(0),
 	  m_vbo_vertexNormals(0),
 	  m_vao_arcCircle(0),
-	  m_vbo_arcCircle(0)
+	  m_vbo_arcCircle(0),
+	  pickingMode(true),
+	  do_picking(false)
 {
-
+	colours.push(vec3(1.0f, 0.0f, 0.0f));
+	colours.push(vec3(0.0f, 1.0f, 0.0f));
+	colours.push(vec3(0.0f, 0.0f, 1.0f));
+	colours.push(vec3(1.0f, 0.0f, 1.0f));
+	colours.push(vec3(0.0f, 1.0f, 1.0f));
 }
 
 //----------------------------------------------------------------------------------------
@@ -83,6 +89,7 @@ void A3::init()
 
 	initLightSources();
 
+	initSelected(*m_rootNode);
 
 	// Exiting the current scope calls delete automatically on meshConsolidator freeing
 	// all vertex data resources.  This is fine since we already copied this data to
@@ -261,6 +268,21 @@ void A3::initLightSources() {
 	m_light.rgbIntensity = vec3(0.8f); // White light
 }
 
+void A3::initSelected(const SceneNode &root) {
+
+	if (root.m_nodeType == NodeType::GeometryNode) {
+		selected[root.m_nodeId] = false;
+		idToColour[root.m_nodeId] = colours.top();
+		colourToId[std::make_tuple(colours.top().r, colours.top().g, colours.top().b)] = root.m_nodeId;
+		colours.pop();
+	}
+
+	list<SceneNode*> children = root.children;
+        for (list<SceneNode*>::iterator it = children.begin(); it != children.end(); ++it) {
+        	initSelected(**it);
+        }
+}
+
 //----------------------------------------------------------------------------------------
 void A3::uploadCommonSceneUniforms() {
 	m_shader.enable();
@@ -345,7 +367,10 @@ static void updateShaderUniforms(
 		const ShaderProgram & shader,
 		const GeometryNode & node,
 		const glm::mat4 & viewMatrix,
-		const glm::mat4 & modelMatrix
+		const glm::mat4 & modelMatrix,
+		bool pickingMode,
+		bool highlight,
+		vec3 pickingColour
 ) {
 
 	shader.enable();
@@ -375,7 +400,18 @@ static void updateShaderUniforms(
 		location = shader.getUniformLocation("material.shininess");
 		glUniform1f(location, node.material.shininess);
 		CHECK_GL_ERRORS;
-
+		
+		//-- Set picking values
+		int drawPickingMode = shader.getUniformLocation("pickingMode");
+		glUniform1i(drawPickingMode, (pickingMode? 1 : 0));
+		CHECK_GL_ERRORS;
+		int colour = shader.getUniformLocation("colour");
+		if (!highlight) {
+			glUniform3f(colour, pickingColour.r, pickingColour.g, pickingColour.b);
+		}
+		else {
+			glUniform3f(colour, 1.0, 1.0, 0.0);
+		}
 	}
 	shader.disable();
 
@@ -444,7 +480,7 @@ void A3::renderNode(const SceneNode &node, glm::mat4 modelMatrix) {
 
         	const GeometryNode * geometryNode = static_cast<const GeometryNode *>(&node);
 
-        	updateShaderUniforms(m_shader, *geometryNode, m_view, modelMatrix);
+        	updateShaderUniforms(m_shader, *geometryNode, m_view, modelMatrix, pickingMode, (!do_picking && selected[geometryNode->m_nodeId]), idToColour[geometryNode->m_nodeId]);
 
 
         	//Get the BatchInfo corresponding to the GeometryNode's unique MeshId.
@@ -528,7 +564,52 @@ bool A3::mouseButtonInputEvent (
 ) {
 	bool eventHandled(false);
 
-	// Fill in with event handling code...
+	if (pickingMode) {
+		if (button == GLFW_MOUSE_BUTTON_LEFT && actions == GLFW_PRESS) {
+                	double xpos, ypos;
+                	glfwGetCursorPos( m_window, &xpos, &ypos );
+
+                	do_picking = true;
+
+                	uploadCommonSceneUniforms();
+                	glClearColor(1.0, 1.0, 1.0, 1.0 );
+                	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+                	glClearColor(0.35, 0.35, 0.35, 1.0);
+
+                	draw();
+
+			CHECK_GL_ERRORS;
+
+			// Ugly -- FB coordinates might be different than Window coordinates
+                	// (e.g., on a retina display).  Must compensate.
+                	xpos *= double(m_framebufferWidth) / double(m_windowWidth);
+                	// WTF, don't know why I have to measure y relative to the bottom of
+                	// the window in this case.
+                	ypos = m_windowHeight - ypos;
+                	ypos *= double(m_framebufferHeight) / double(m_windowHeight);
+
+                	GLubyte buffer[ 4 ] = { 0, 0, 0, 0 };
+                	// A bit ugly -- don't want to swap the just-drawn false colours
+                	// to the screen, so read from the back buffer.
+                	glReadBuffer( GL_BACK );
+                	// Actually read the pixel at the mouse location.
+                	glReadPixels( int(xpos), int(ypos), 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, buffer );
+                	CHECK_GL_ERRORS;
+
+                	// Reassemble the object ID.
+			std::tuple<float, float, float> pickingColour = std::make_tuple(((float)buffer[0])/255.0f, ((float)buffer[1])/255.0f, ((float)buffer[2])/255.0f);
+			if (colourToId.find(pickingColour) != colourToId.end()){
+				unsigned int what = colourToId[pickingColour];
+                        	selected[what] = !selected[what];
+                	}
+
+                	do_picking = false;
+
+                	CHECK_GL_ERRORS;
+
+			eventHandled = true;
+		}
+	}
 
 	return eventHandled;
 }
