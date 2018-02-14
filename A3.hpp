@@ -88,6 +88,8 @@ protected:
 	bool leftMousePressed;
 	bool rightMousePressed;
 	bool middleMousePressed;
+	double oldX;
+	double oldY;
 	std::map<unsigned int, bool> selected; 
 	std::stack<glm::vec3> colours;
 	std::map<unsigned int, glm::vec3> idToColour;

@@ -34,7 +34,9 @@ A3::A3(const std::string & luaSceneFile)
 	  do_picking(false),
 	  leftMousePressed(false),
 	  rightMousePressed(false),
-	  middleMousePressed(false)
+	  middleMousePressed(false),
+	  oldX(0),
+	  oldY(0)
 {
 	colours.push(vec3(1.0f, 0.0f, 0.0f));
 	colours.push(vec3(0.0f, 1.0f, 0.0f));
@@ -480,6 +482,9 @@ void A3::renderGraph(const SceneNode &root, glm::mat4 modelMatrix) {
 	else if (root.m_nodeType == NodeType::GeometryNode) {
                 modelMatrix = modelMatrix * root.trans;
         }
+	else if (root.m_nodeType == NodeType::JointNode) {
+		modelMatrix = modelMatrix * root.trans;
+	}
 
         if (!children.empty()) {
                 for (list<SceneNode*>::iterator it = children.begin(); it != children.end(); ++it) {
@@ -561,7 +566,25 @@ bool A3::mouseMoveEvent (
 ) {
 	bool eventHandled(false);
 
-	// Fill in with event handling code...
+	double xDiff = xPos - oldX;
+	double yDiff = yPos - oldY;
+	oldX = xPos;
+	oldY = yPos;
+	
+	if (!ImGui::IsMouseHoveringAnyWindow()) {
+		if (pickingMode) {
+			if (middleMousePressed) {
+				for (map<unsigned int, bool>::iterator it = selected.begin(); it != selected.end(); ++it) {
+					if (it->second) {
+						if (objectToJoint.find(it->first) != objectToJoint.end()) {
+							objectToJoint.at(it->first)->rotate('z', yDiff);
+						}
+					}
+				}
+				eventHandled = true;
+			}
+		}
+	}
 
 	return eventHandled;
 }
