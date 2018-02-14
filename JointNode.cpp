@@ -37,6 +37,12 @@ void JointNode::set_joint_y(double min, double init, double max) {
 	rotate();
 }
 
+void JointNode::reset() {
+	angleX = m_joint_x.init;
+	angleY = m_joint_y.init;
+	rotate();
+}
+
 void JointNode::rotateJoint(char axis, float angle) {
 	
 	switch(axis) {

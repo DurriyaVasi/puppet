@@ -55,6 +55,11 @@ protected:
 	void renderNode(const SceneNode &node, glm::mat4 modelMatrix);
 	void renderArcCircle();
 
+	void resetJoints(SceneNode *node);
+	void resetPosition();
+	void resetOrientation();
+	void resetAll();
+
 	glm::mat4 m_perpsective;
 	glm::mat4 m_view;
 
@@ -83,7 +88,7 @@ protected:
 
 	std::shared_ptr<SceneNode> m_rootNode;
 
-	bool pickingMode;
+	int pickingMode;
 	bool do_picking;
 	bool leftMousePressed;
 	bool rightMousePressed;
@@ -92,6 +97,12 @@ protected:
 	double oldY;
 	SceneNode *translateNode;
 	SceneNode *rotateNode;
+	glm::mat4 noTranslate;
+	glm::mat4 noRotate;
+	bool hasZBuffer;
+	bool hasBackCull;
+	bool hasFrontCull;
+	bool drawCircle;
 	std::map<unsigned int, bool> selected; 
 	std::stack<glm::vec3> colours;
 	std::map<unsigned int, glm::vec3> idToColour;

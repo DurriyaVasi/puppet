@@ -10,8 +10,8 @@ public:
 	void set_joint_x(double min, double init, double max);
 	void set_joint_y(double min, double init, double max);
 
+	void reset();
 	void rotate();
-
 	void rotateJoint(char axis, float angle); 
 
 	struct JointRange {

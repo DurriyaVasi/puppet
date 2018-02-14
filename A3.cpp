@@ -30,7 +30,7 @@ A3::A3(const std::string & luaSceneFile)
 	  m_vbo_vertexNormals(0),
 	  m_vao_arcCircle(0),
 	  m_vbo_arcCircle(0),
-	  pickingMode(true),
+	  pickingMode(0),
 	  do_picking(false),
 	  leftMousePressed(false),
 	  rightMousePressed(false),
@@ -38,7 +38,13 @@ A3::A3(const std::string & luaSceneFile)
 	  oldX(0),
 	  oldY(0),
 	  translateNode(NULL),
-	  rotateNode(NULL)
+	  rotateNode(NULL),
+	  noTranslate(mat4()),
+	  noRotate(mat4()),
+	  hasZBuffer(false),
+	  hasBackCull(false),
+	  hasFrontCull(false),
+	  drawCircle(true)
 {
 	colours.push(vec3(1.0f, 0.0f, 0.0f));
 	colours.push(vec3(0.0f, 1.0f, 0.0f));
@@ -98,6 +104,8 @@ void A3::init()
 
 	translateNode = &(*m_rootNode);
 	rotateNode = m_rootNode->children.front();
+	noTranslate = m_rootNode->trans;
+	noRotate = m_rootNode->children.front()->trans;
 
 	initSelected(&(*m_rootNode));
 
@@ -287,6 +295,7 @@ void A3::initSelected(SceneNode *root) {
 		colours.pop();
 	}
 	else if (root->m_nodeType == NodeType::JointNode) {
+		//list<SceneNode*> children = root->children.front()->children;
 		list<SceneNode*> children = root->children.front()->children.front()->children;
         	for (list<SceneNode*>::iterator it = children.begin(); it != children.end(); ++it) {
                 	SceneNode *node = *it;
@@ -344,6 +353,31 @@ void A3::appLogic()
 	uploadCommonSceneUniforms();
 }
 
+
+void A3::resetPosition() {
+	translateNode->set_transform(noTranslate);
+}
+
+void A3::resetOrientation() {
+	rotateNode->set_transform(noRotate);
+}
+
+void A3::resetJoints(SceneNode *node) {
+	if (node->m_nodeType == NodeType::JointNode) {
+		JointNode * joint = static_cast<JointNode *>(node);
+		joint->reset();
+	}
+	list<SceneNode*> children = node->children;
+	for (list<SceneNode*>::iterator it = children.begin(); it != children.end(); ++it) {
+		resetJoints(*it);
+	}
+}
+
+void A3::resetAll() {
+	resetPosition();
+	resetOrientation();
+	resetJoints(&(*m_rootNode));
+}
 //----------------------------------------------------------------------------------------
 /*
  * Called once per frame, after appLogic(), but before the draw() method.
@@ -368,13 +402,52 @@ void A3::guiLogic()
 			windowFlags);
 
 
-		// Add more gui elements here here ...
+		// Add more gui
+		if (ImGui::BeginMainMenuBar()) {
+			if (ImGui::BeginMenu("Application")) {
+				if (ImGui::MenuItem("Reset Position", "I")) {
+					resetPosition();
+				}
+				if (ImGui::MenuItem("Reset Orientation", "O")) {
+					resetOrientation();
+                                }
+				if (ImGui::MenuItem("Reset Joints", "N")) {
+					resetJoints(&(*m_rootNode));
+                                }
+				if (ImGui::MenuItem("Reset All", "A")) {
+					resetAll();
+                                }
+				if (ImGui::MenuItem("Quit", "Q")) {
+					glfwSetWindowShouldClose(m_window, GL_TRUE);
+                                }
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu("Edit")) {
+				if (ImGui::MenuItem("Undo", "U")) {
+					
+				}
+				if (ImGui::MenuItem("Redo", "R")) {
+			
+				}
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu("Options")) {
+				ImGui::MenuItem("Circle", "C", &drawCircle);
+				ImGui::MenuItem("Z-buffer", "Z", &hasZBuffer);
+				ImGui::MenuItem("Backface culling", "B", &hasBackCull);
+				ImGui::MenuItem("Frontface culling", "F", &hasFrontCull);
+				ImGui::EndMenu();
+			}
+			ImGui::EndMainMenuBar();
+		}
 
+		ImGui::RadioButton( "Position/Orientation", &pickingMode, 0);
+		ImGui::RadioButton( "Joints", &pickingMode, 1);
 
 		// Create Button, and check if it was clicked:
 		if( ImGui::Button( "Quit Application" ) ) {
 			glfwSetWindowShouldClose(m_window, GL_TRUE);
-		}
+                }
 
 		ImGui::Text( "Framerate: %.1f FPS", ImGui::GetIO().Framerate );
 
@@ -423,7 +496,7 @@ static void updateShaderUniforms(
 		
 		//-- Set picking values
 		int drawPickingMode = shader.getUniformLocation("pickingMode");
-		glUniform1i(drawPickingMode, (pickingMode? 1 : 0));
+		glUniform1i(drawPickingMode, pickingMode ? 1 : 0);
 		CHECK_GL_ERRORS;
 		int colour = shader.getUniformLocation("colour");
 		if (!highlight) {
@@ -448,7 +521,11 @@ void A3::draw() {
 
 
 	glDisable( GL_DEPTH_TEST );
-	renderArcCircle();
+
+
+	if (drawCircle) {
+		renderArcCircle();
+	}
 }
 
 //----------------------------------------------------------------------------------------
@@ -503,7 +580,7 @@ void A3::renderNode(const SceneNode &node, glm::mat4 modelMatrix) {
 
         	const GeometryNode * geometryNode = static_cast<const GeometryNode *>(&node);
 
-        	updateShaderUniforms(m_shader, *geometryNode, m_view, modelMatrix, pickingMode, (!do_picking && selected[geometryNode->m_nodeId]), idToColour[geometryNode->m_nodeId]);
+        	updateShaderUniforms(m_shader, *geometryNode, m_view, modelMatrix, (pickingMode == 1), (!do_picking && selected[geometryNode->m_nodeId]), idToColour[geometryNode->m_nodeId]);
 
 
         	//Get the BatchInfo corresponding to the GeometryNode's unique MeshId.
@@ -577,7 +654,7 @@ bool A3::mouseMoveEvent (
 	oldY = yPos;
 	
 	if (!ImGui::IsMouseHoveringAnyWindow()) {
-		if (pickingMode) {
+		if (pickingMode == 1) {
 			if (middleMousePressed) {
 				for (map<unsigned int, bool>::iterator it = selected.begin(); it != selected.end(); ++it) {
 					if (it->second) {
@@ -619,7 +696,7 @@ bool A3::mouseButtonInputEvent (
 
 	if (button == GLFW_MOUSE_BUTTON_LEFT && actions == GLFW_PRESS) {
 		leftMousePressed = true;
-		if (pickingMode) {
+		if (pickingMode == 1) {
                 	double xpos, ypos;
                 	glfwGetCursorPos( m_window, &xpos, &ypos );
 
