@@ -65,5 +65,5 @@ void JointNode::rotateJoint(char axis, float angle) {
 }
 
 void JointNode::rotate() {
-	trans = glm::rotate(degreesToRadians(angleX), vec3(1, 0, 0)) * glm::rotate(degreesToRadians(angleY), vec3(0, 1, 0));
+	trans = glm::rotate(degreesToRadians(angleX), vec3(1, 0, 0)) * glm::rotate(degreesToRadians(angleY), vec3(0, 0, 1));
 }	

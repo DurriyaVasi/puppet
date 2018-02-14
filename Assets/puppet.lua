@@ -30,34 +30,46 @@ shoulder:translate(0.0, 0.5, 0.0)
 shoulderScale = gr.mesh('sphere', 'shoulderScale')
 shoulder:add_child(shoulderScale)
 shoulderScale:scale(0.6, 0.13, 0.13)
-shoulderScale:scale(1.0, 1.0, 1.0)
 shoulderScale:set_material(red)
 
-rightUpperArmJoint = gr.joint('rightUpperArmJoint', {0, 0, 180}, {0, 0, 180})
-shoulder:add_child(rightUpperArmJoint)
+rightUpperArmJointMove = gr.node('rightUpperArmJointMove')
+shoulder:add_child(rightUpperArmJointMove)
+rightUpperArmJointMove :translate(-0.5, 0.0, 0.0)
 
-rightUpperArm = gr.mesh('sphere', 'rightUpperArm')
-rightUpperArmJoint:add_child(rightUpperArm)
-rightUpperArm:scale(0.13, 0.32, 0.13)
+rightUpperArmJoint = gr.joint('rightUpperArmJoint', {-45, 0, 0}, {-45, 0, 0})
+rightUpperArmJointMove:add_child(rightUpperArmJoint)
+
+rightUpperArmJointUnmove = gr.node('rightUpperArmJoint')
+rightUpperArmJoint:add_child(rightUpperArmJointUnmove)
+rightUpperArmJointUnmove:translate(0.5, 0.0, 0.0)
+
+rightUpperArm = gr.node('rightUpperArm')
+rightUpperArmJointUnmove:add_child(rightUpperArm)
 rightUpperArm:translate(-0.55, -0.3, 0)
-rightUpperArm:set_material(blue)
 
-rightForearmJoint = gr.joint('rightUpperArmJoint', {0, 0, 180}, {0, 0, 180})
-rightUpperArm:add_child(rightForearmJoint)
+rightUpperArmScale = gr.mesh('sphere', 'rightUpperArmScale')
+rightUpperArm:add_child(rightUpperArmScale)
+rightUpperArmScale:scale(0.13, 0.32, 0.13)
+rightUpperArmScale:set_material(blue)
 
-rightForearm = gr.mesh('sphere', 'rightForearm')
-rightForearmJoint:add_child(rightForearm)
-rightForearm:scale(0.5, 0.80, 0.5)
-rightForearm:translate(0.0, -1.8, 0.0)
-rightForearm:set_material(blue)
+--rightForearmJointMove 
 
-rightHandJoint = gr.joint('rightHandJoint', {0, 0, 180}, {0, 0, 180})
-rightForearm:add_child(rightHandJoint)
+--rightForearmJoint = gr.joint('rightUpperArmJoint', {0, 0, 180}, {0, 0, 180})
+--rightUpperArm:add_child(rightForearmJoint)
 
-rightHand = gr.mesh('sphere', 'rightHand')
-rightHandJoint:add_child(rightHand)
-rightHand:scale(1.0, 0.3, 1.0)
-rightHand:translate(0.0, -1.3, 0.0)
-rightHand:set_material(blue)
+--rightForearm = gr.mesh('sphere', 'rightForearm')
+--rightForearmJoint:add_child(rightForearm)
+--rightForearm:scale(0.5, 0.80, 0.5)
+--rightForearm:translate(0.0, -1.8, 0.0)
+--rightForearm:set_material(blue)
+
+--rightHandJoint = gr.joint('rightHandJoint', {0, 0, 180}, {0, 0, 180})
+--rightForearm:add_child(rightHandJoint)
+
+--rightHand = gr.mesh('sphere', 'rightHand')
+--rightHandJoint:add_child(rightHand)
+--rightHand:scale(1.0, 0.3, 1.0)
+--rightHand:translate(0.0, -1.3, 0.0)
+--rightHand:set_material(blue)
 
 return rootnode

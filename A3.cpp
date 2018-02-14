@@ -30,7 +30,7 @@ A3::A3(const std::string & luaSceneFile)
 	  m_vbo_vertexNormals(0),
 	  m_vao_arcCircle(0),
 	  m_vbo_arcCircle(0),
-	  pickingMode(false),
+	  pickingMode(true),
 	  do_picking(false),
 	  leftMousePressed(false),
 	  rightMousePressed(false),
@@ -287,7 +287,7 @@ void A3::initSelected(SceneNode *root) {
 		colours.pop();
 	}
 	else if (root->m_nodeType == NodeType::JointNode) {
-		list<SceneNode*> children = root->children;
+		list<SceneNode*> children = root->children.front()->children.front()->children;
         	for (list<SceneNode*>::iterator it = children.begin(); it != children.end(); ++it) {
                 	SceneNode *node = *it;
 			if (node->m_nodeType == NodeType::GeometryNode) {
@@ -582,7 +582,9 @@ bool A3::mouseMoveEvent (
 				for (map<unsigned int, bool>::iterator it = selected.begin(); it != selected.end(); ++it) {
 					if (it->second) {
 						if (objectToJoint.find(it->first) != objectToJoint.end()) {
-							objectToJoint.at(it->first)->rotate('z', yDiff);
+							JointNode * joint = static_cast<JointNode *>(objectToJoint.at(it->first));
+							joint->rotateJoint('y', yDiff);
+							joint->rotateJoint('x', xDiff);
 						}
 					}
 				}
