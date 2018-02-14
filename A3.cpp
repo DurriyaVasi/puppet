@@ -282,7 +282,7 @@ void A3::initViewMatrix() {
 //----------------------------------------------------------------------------------------
 void A3::initLightSources() {
 	// World-space position
-	m_light.position = vec3(-2.0f, 5.0f, 0.5f);
+	m_light.position = vec3(0.0f, 0.0f, 5.0f);
 	m_light.rgbIntensity = vec3(0.8f); // White light
 }
 
