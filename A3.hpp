@@ -46,7 +46,7 @@ protected:
 	void mapVboDataToVertexShaderInputLocations();
 	void initViewMatrix();
 	void initLightSources();
-	void initSelected(const SceneNode &root);
+	void initSelected(SceneNode *root);
 
 	void initPerspectiveMatrix();
 	void uploadCommonSceneUniforms();
@@ -85,8 +85,12 @@ protected:
 
 	bool pickingMode;
 	bool do_picking;
+	bool leftMousePressed;
+	bool rightMousePressed;
+	bool middleMousePressed;
 	std::map<unsigned int, bool> selected; 
 	std::stack<glm::vec3> colours;
 	std::map<unsigned int, glm::vec3> idToColour;
 	std::map<std::tuple<float, float, float>, unsigned int> colourToId;
+	std::map<unsigned int, SceneNode*> objectToJoint;
 };

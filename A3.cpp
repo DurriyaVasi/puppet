@@ -31,7 +31,10 @@ A3::A3(const std::string & luaSceneFile)
 	  m_vao_arcCircle(0),
 	  m_vbo_arcCircle(0),
 	  pickingMode(true),
-	  do_picking(false)
+	  do_picking(false),
+	  leftMousePressed(false),
+	  rightMousePressed(false),
+	  middleMousePressed(false)
 {
 	colours.push(vec3(1.0f, 0.0f, 0.0f));
 	colours.push(vec3(0.0f, 1.0f, 0.0f));
@@ -89,7 +92,7 @@ void A3::init()
 
 	initLightSources();
 
-	initSelected(*m_rootNode);
+	initSelected(&(*m_rootNode));
 
 	// Exiting the current scope calls delete automatically on meshConsolidator freeing
 	// all vertex data resources.  This is fine since we already copied this data to
@@ -268,18 +271,28 @@ void A3::initLightSources() {
 	m_light.rgbIntensity = vec3(0.8f); // White light
 }
 
-void A3::initSelected(const SceneNode &root) {
+void A3::initSelected(SceneNode *root) {
 
-	if (root.m_nodeType == NodeType::GeometryNode) {
-		selected[root.m_nodeId] = false;
-		idToColour[root.m_nodeId] = colours.top();
-		colourToId[std::make_tuple(colours.top().r, colours.top().g, colours.top().b)] = root.m_nodeId;
+	if (root->m_nodeType == NodeType::GeometryNode) {
+		selected[root->m_nodeId] = false;
+		idToColour[root->m_nodeId] = colours.top();
+		colourToId[std::make_tuple(colours.top().r, colours.top().g, colours.top().b)] = root->m_nodeId;
 		colours.pop();
 	}
+	else if (root->m_nodeType == NodeType::JointNode) {
+		list<SceneNode*> children = root->children;
+        	for (list<SceneNode*>::iterator it = children.begin(); it != children.end(); ++it) {
+                	SceneNode *node = *it;
+			if (node->m_nodeType == NodeType::GeometryNode) {
+				objectToJoint[node->m_nodeId] = root;
+				break;
+			}
+        	}
+	}
 
-	list<SceneNode*> children = root.children;
+	list<SceneNode*> children = root->children;
         for (list<SceneNode*>::iterator it = children.begin(); it != children.end(); ++it) {
-        	initSelected(**it);
+        	initSelected(*it);
         }
 }
 
@@ -564,8 +577,9 @@ bool A3::mouseButtonInputEvent (
 ) {
 	bool eventHandled(false);
 
-	if (pickingMode) {
-		if (button == GLFW_MOUSE_BUTTON_LEFT && actions == GLFW_PRESS) {
+	if (button == GLFW_MOUSE_BUTTON_LEFT && actions == GLFW_PRESS) {
+		leftMousePressed = true;
+		if (pickingMode) {
                 	double xpos, ypos;
                 	glfwGetCursorPos( m_window, &xpos, &ypos );
 
@@ -606,10 +620,30 @@ bool A3::mouseButtonInputEvent (
                 	do_picking = false;
 
                 	CHECK_GL_ERRORS;
-
-			eventHandled = true;
 		}
+		eventHandled = true;
 	}
+	if (button == GLFW_MOUSE_BUTTON_LEFT && actions == GLFW_RELEASE) {
+		leftMousePressed = false;
+		eventHandled = true;
+	}
+	if (button == GLFW_MOUSE_BUTTON_RIGHT && actions == GLFW_PRESS) {
+		rightMousePressed = true;
+		eventHandled = true;
+	}
+	if (button == GLFW_MOUSE_BUTTON_MIDDLE && actions == GLFW_PRESS) {
+		middleMousePressed = true;
+		eventHandled = true;
+	}
+	if (button == GLFW_MOUSE_BUTTON_RIGHT && actions == GLFW_RELEASE) {
+        	rightMousePressed = false;
+                eventHandled = true;
+        }
+        if (button == GLFW_MOUSE_BUTTON_MIDDLE && actions == GLFW_RELEASE) {
+        	middleMousePressed = false;
+                eventHandled = true;
+         }
+		
 
 	return eventHandled;
 }
