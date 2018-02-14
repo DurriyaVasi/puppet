@@ -90,6 +90,8 @@ protected:
 	bool middleMousePressed;
 	double oldX;
 	double oldY;
+	SceneNode *translateNode;
+	SceneNode *rotateNode;
 	std::map<unsigned int, bool> selected; 
 	std::stack<glm::vec3> colours;
 	std::map<unsigned int, glm::vec3> idToColour;

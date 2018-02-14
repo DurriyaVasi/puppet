@@ -30,13 +30,15 @@ A3::A3(const std::string & luaSceneFile)
 	  m_vbo_vertexNormals(0),
 	  m_vao_arcCircle(0),
 	  m_vbo_arcCircle(0),
-	  pickingMode(true),
+	  pickingMode(false),
 	  do_picking(false),
 	  leftMousePressed(false),
 	  rightMousePressed(false),
 	  middleMousePressed(false),
 	  oldX(0),
-	  oldY(0)
+	  oldY(0),
+	  translateNode(NULL),
+	  rotateNode(NULL)
 {
 	colours.push(vec3(1.0f, 0.0f, 0.0f));
 	colours.push(vec3(0.0f, 1.0f, 0.0f));
@@ -93,6 +95,9 @@ void A3::init()
 	initViewMatrix();
 
 	initLightSources();
+
+	translateNode = &(*m_rootNode);
+	rotateNode = m_rootNode->children.front();
 
 	initSelected(&(*m_rootNode));
 
@@ -583,6 +588,16 @@ bool A3::mouseMoveEvent (
 				}
 				eventHandled = true;
 			}
+		}
+		else {
+			if (leftMousePressed) {
+				translateNode->translate(vec3(xDiff/500, (-1 * yDiff)/500, 0));
+				eventHandled = true;
+			}
+			else if (middleMousePressed) {
+				translateNode->translate(vec3(0, 0, yDiff/500));
+				eventHandled = true;
+			}			
 		}
 	}
 
