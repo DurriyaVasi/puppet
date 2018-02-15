@@ -8,6 +8,7 @@ rootnode:translate(0.0, 0.0, -1.0)
 
 rootRotateNode = gr.node('rootRotate')
 rootnode:add_child(rootRotateNode)
+--rootRotateNode:rotate('y', 90)
 
 red = gr.material({1.0, 0.0, 0.0}, {0.1, 0.1, 0.1}, 10)
 blue = gr.material({0.0, 0.0, 1.0}, {0.1, 0.1, 0.1}, 10)
@@ -243,7 +244,7 @@ headRotateMove:add_child(headRotate)
 neckJointMove = gr.node('neckJointMove')
 headRotate:add_child(neckJointMove)
 
-neckJoint = gr.joint('neckJoint', {0, 0, 0}, {-30, 0, 30});
+neckJoint = gr.joint('neckJoint', {-45, 0, 90}, {0, 0, 0});
 neckJointMove:add_child(neckJoint)
 
 neck = gr.node('neck')
@@ -259,7 +260,7 @@ headJointMove = gr.node('headJointMove')
 neck:add_child(headJointMove)
 headJointMove:translate(0.0, 0.07, 0.0)
 
-headJoint = gr.joint('headJoint', {0, 0, 0}, {-15, 0, 15})
+headJoint = gr.joint('headJoint', {-15, 0, 15}, {0, 0, 0})
 headJointMove:add_child(headJoint)
 
 head = gr.node('head')
