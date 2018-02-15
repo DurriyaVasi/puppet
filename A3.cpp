@@ -727,7 +727,7 @@ bool A3::mouseMoveEvent (
 	
 	if (!ImGui::IsMouseHoveringAnyWindow()) {
 		if (pickingMode == 1) {
-			if (rightMousePressed) {
+			if (middleMousePressed) {
 				for (map<unsigned int, bool>::iterator it = selected.begin(); it != selected.end(); ++it) {
 					if (it->second) {
 						if (objectToJoint.find(it->first) != objectToJoint.end()) {
