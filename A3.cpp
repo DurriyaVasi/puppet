@@ -378,11 +378,16 @@ void A3::undo() {
 		return;
 	}
 	else {
-		JointNode *joint = j.node;
-		double xDiff = -1 * j.xAngle;
-		double yDiff = -1 * j.yAngle;
-		joint->rotateJoint('y', yDiff);
-                joint->rotateJoint('x', xDiff);
+		while (!j.node.empty()) {
+			JointNode *joint = j.node.top();
+			double xDiff = j.xAngle.top() * -1;
+			double yDiff = j.yAngle.top() * -1;
+			joint->rotateJoint('y', yDiff);
+			joint->rotateJoint('x', xDiff);
+			j.node.pop();
+			j.xAngle.pop();
+			j.yAngle.pop();
+		}
 	}
 }
 
@@ -394,11 +399,16 @@ void A3::redo() {
                 return;
         }
         else {
-                JointNode *joint = j.node;
-                double xDiff = j.xAngle;
-                double yDiff = j.yAngle;
-                joint->rotateJoint('y', yDiff);
-                joint->rotateJoint('x', xDiff);
+		while (!j.node.empty()) {
+                        JointNode *joint = j.node.top();
+                        double xDiff = j.xAngle.top();
+                        double yDiff = j.yAngle.top();
+                        joint->rotateJoint('y', yDiff);
+                        joint->rotateJoint('x', xDiff);
+			j.node.pop();
+                        j.xAngle.pop();
+                        j.yAngle.pop();
+                }
         }
 }
 	
@@ -728,16 +738,23 @@ bool A3::mouseMoveEvent (
 	if (!ImGui::IsMouseHoveringAnyWindow()) {
 		if (pickingMode == 1) {
 			if (middleMousePressed) {
+				stack<JointNode*> nodes;
+				stack<double> xAngles;
+				stack<double> yAngles;
 				for (map<unsigned int, bool>::iterator it = selected.begin(); it != selected.end(); ++it) {
 					if (it->second) {
 						if (objectToJoint.find(it->first) != objectToJoint.end()) {
 							JointNode * joint = static_cast<JointNode *>(objectToJoint.at(it->first));
 							joint->rotateJoint('y', yDiff);
 							joint->rotateJoint('x', xDiff);
-							jointStack.addToStack(JointTransform(joint, xDiff, yDiff)); 
+							//jointStack.addToStack(JointTransform(joint, xDiff, yDiff)); 
+							nodes.push(joint);
+							xAngles.push(xDiff);
+							yAngles.push(yDiff);
 						}
 					}
 				}
+				jointStack.addToStack(JointTransform(nodes, xAngles, yAngles));
 				eventHandled = true;
 			}
 		}

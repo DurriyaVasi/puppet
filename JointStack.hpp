@@ -1,20 +1,20 @@
 #include "SceneNode.hpp"
 #include "JointNode.hpp"
+#include <stack>
+
+using namespace std;
 
 class JointTransform {
 	public:
-        JointNode *node;
-        double xAngle;
-	double yAngle;
-	JointTransform(JointNode *node, double xAngle, char yAngle) {
+        stack<JointNode*> node;
+        stack<double> xAngle;
+	stack<double> yAngle;
+	JointTransform(stack<JointNode*> node, stack<double> xAngle, stack<double> yAngle) {
 		this->node = node;
 		this->xAngle = xAngle;
 		this->yAngle = yAngle;
 	}
 	JointTransform(){
-		this->node = NULL;
-		this->xAngle = 0;
-		this->yAngle = 0;
 	}
 };
 
