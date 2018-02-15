@@ -6,6 +6,7 @@
 #include "cs488-framework/MeshConsolidator.hpp"
 
 #include "SceneNode.hpp"
+#include "JointStack.hpp"
 
 #include <glm/glm.hpp>
 #include <memory>
@@ -55,10 +56,13 @@ protected:
 	void renderNode(const SceneNode &node, glm::mat4 modelMatrix);
 	void renderArcCircle();
 
+	void makeJointsInit(SceneNode *node);
 	void resetJoints(SceneNode *node);
 	void resetPosition();
 	void resetOrientation();
 	void resetAll();
+	void undo();
+	void redo();
 
 	glm::mat4 m_perpsective;
 	glm::mat4 m_view;
@@ -108,4 +112,5 @@ protected:
 	std::map<unsigned int, glm::vec3> idToColour;
 	std::map<std::tuple<float, float, float>, unsigned int> colourToId;
 	std::map<unsigned int, SceneNode*> objectToJoint;
+	JointStack jointStack;
 };

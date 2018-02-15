@@ -44,7 +44,8 @@ A3::A3(const std::string & luaSceneFile)
 	  hasZBuffer(false),
 	  hasBackCull(false),
 	  hasFrontCull(false),
-	  drawCircle(true)
+	  drawCircle(true),
+	  jointStack(JointStack())
 {
 	colours.push(vec3(1.0f, 0.0f, 0.0f));
 	colours.push(vec3(0.0f, 1.0f, 0.0f));
@@ -353,6 +354,38 @@ void A3::appLogic()
 	uploadCommonSceneUniforms();
 }
 
+void A3::undo() {
+	JointTransform j;
+	bool valid = jointStack.undo(j);
+	if (!valid) {
+		cerr << "Undo not valid" << endl;
+		return;
+	}
+	else {
+		JointNode *joint = j.node;
+		double xDiff = -1 * j.xAngle;
+		double yDiff = -1 * j.yAngle;
+		joint->rotateJoint('y', yDiff);
+                joint->rotateJoint('x', xDiff);
+	}
+}
+
+void A3::redo() {
+        JointTransform j;
+        bool valid = jointStack.redo(j);
+        if (!valid) {
+                cerr << "Redo not valid" << endl;
+                return;
+        }
+        else {
+                JointNode *joint = j.node;
+                double xDiff = j.xAngle;
+                double yDiff = j.yAngle;
+                joint->rotateJoint('y', yDiff);
+                joint->rotateJoint('x', xDiff);
+        }
+}
+	
 
 void A3::resetPosition() {
 	translateNode->set_transform(noTranslate);
@@ -362,15 +395,20 @@ void A3::resetOrientation() {
 	rotateNode->set_transform(noRotate);
 }
 
-void A3::resetJoints(SceneNode *node) {
+void A3::makeJointsInit(SceneNode *node) {
 	if (node->m_nodeType == NodeType::JointNode) {
 		JointNode * joint = static_cast<JointNode *>(node);
 		joint->reset();
 	}
 	list<SceneNode*> children = node->children;
 	for (list<SceneNode*>::iterator it = children.begin(); it != children.end(); ++it) {
-		resetJoints(*it);
+		makeJointsInit(*it);
 	}
+}
+
+void A3::resetJoints(SceneNode *node) {
+	makeJointsInit(node);
+	jointStack = JointStack();
 }
 
 void A3::resetAll() {
@@ -424,10 +462,10 @@ void A3::guiLogic()
 			}
 			if (ImGui::BeginMenu("Edit")) {
 				if (ImGui::MenuItem("Undo", "U")) {
-					
+					undo();
 				}
 				if (ImGui::MenuItem("Redo", "R")) {
-			
+					redo();
 				}
 				ImGui::EndMenu();
 			}
@@ -673,6 +711,7 @@ bool A3::mouseMoveEvent (
 							JointNode * joint = static_cast<JointNode *>(objectToJoint.at(it->first));
 							joint->rotateJoint('y', yDiff);
 							joint->rotateJoint('x', xDiff);
+							jointStack.addToStack(JointTransform(joint, xDiff, yDiff)); 
 						}
 					}
 				}
