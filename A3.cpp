@@ -859,6 +859,58 @@ bool A3::keyInputEvent (
 			show_gui = !show_gui;
 			eventHandled = true;
 		}
+		if (key == GLFW_KEY_I) {
+			resetPosition();
+			eventHandled = true;
+		}
+		if (key == GLFW_KEY_O) {
+			resetOrientation();
+			eventHandled = true;
+		}
+		if (key == GLFW_KEY_N) {
+			resetJoints(&(*m_rootNode));
+                        eventHandled = true;
+                }
+		if (key == GLFW_KEY_A) {
+			resetAll();
+                        eventHandled = true;
+                }
+		if (key == GLFW_KEY_Q) {
+			glfwSetWindowShouldClose(m_window, GL_TRUE);
+                        eventHandled = true;
+                }
+		if (key == GLFW_KEY_U) {
+			undo();
+                        eventHandled = true;
+                }
+		if (key == GLFW_KEY_R) {
+			redo();
+                        eventHandled = true;
+                }
+		if (key == GLFW_KEY_C) {
+			drawCircle = !drawCircle;
+                        eventHandled = true;
+                }
+		if (key == GLFW_KEY_Z) {
+			hasZBuffer = !hasZBuffer;
+                        eventHandled = true;
+                }
+		if (key == GLFW_KEY_B) {
+			hasBackCull = !hasBackCull;
+                        eventHandled = true;
+                }
+		if (key == GLFW_KEY_F) {
+			hasFrontCull = !hasFrontCull;
+                        eventHandled = true;
+                }
+		if (key == GLFW_KEY_P) {
+			pickingMode = 0;
+                        eventHandled = true;
+                }
+		if (key == GLFW_KEY_J) {
+			pickingMode = 1;
+                        eventHandled = true;
+                }
 	}
 	// Fill in with event handling code...
 
