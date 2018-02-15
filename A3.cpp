@@ -52,6 +52,19 @@ A3::A3(const std::string & luaSceneFile)
 	colours.push(vec3(0.0f, 0.0f, 1.0f));
 	colours.push(vec3(1.0f, 0.0f, 1.0f));
 	colours.push(vec3(0.0f, 1.0f, 1.0f));
+	colours.push(vec3(1.0f, 0.5f, 0.5f));
+	colours.push(vec3(0.5f, 1.0f, 0.5f));
+	colours.push(vec3(0.5f, 0.5f, 1.0f));
+	/*colours.push(vec3(0.5f, 1.0f, 1.0f));
+	colours.push(vec3(1.0f, 0.5f, 1.0f));
+	colours.push(vec3(1.0f, 1.0f, 0.5f));
+	colours.push(vec3(0.7f, 0.3f, 0.3f));
+	colours.push(vec3(0.3f, 0.7f, 0.3f));
+	colours.push(vec3(0.3f, 0.3f, 0.7f));
+	colours.push(vec3(0.3f, 0.7f, 0.7f));
+	colours.push(vec3(0.7f, 0.3f, 0.7f));
+	colours.push(vec3(0.7f, 0.7f, 0.3f));
+	colours.push(vec3(0.7f, 0.5f, 0.5f));*/
 }
 
 //----------------------------------------------------------------------------------------
@@ -290,14 +303,17 @@ void A3::initLightSources() {
 void A3::initSelected(SceneNode *root) {
 
 	if (root->m_nodeType == NodeType::GeometryNode) {
+
+		cout << root->m_name << endl;
+
 		selected[root->m_nodeId] = false;
-		idToColour[root->m_nodeId] = colours.top();
-		colourToId[std::make_tuple(colours.top().r, colours.top().g, colours.top().b)] = root->m_nodeId;
-		colours.pop();
+		//idToColour[root->m_nodeId] = colours.top();
+		//colourToId[std::make_tuple(colours.top().r, colours.top().g, colours.top().b)] = root->m_nodeId;
+		//colours.pop();
 	}
 	else if (root->m_nodeType == NodeType::JointNode) {
-		//list<SceneNode*> children = root->children.front()->children;
-		list<SceneNode*> children = root->children.front()->children.front()->children;
+		list<SceneNode*> children = root->children.front()->children;
+		//list<SceneNode*> children = root->children.front()->children.front()->children;
         	for (list<SceneNode*>::iterator it = children.begin(); it != children.end(); ++it) {
                 	SceneNode *node = *it;
 			if (node->m_nodeType == NodeType::GeometryNode) {
@@ -538,7 +554,12 @@ static void updateShaderUniforms(
 		CHECK_GL_ERRORS;
 		int colour = shader.getUniformLocation("colour");
 		if (!highlight) {
-			glUniform3f(colour, pickingColour.r, pickingColour.g, pickingColour.b);
+			//glUniform3f(colour, pickingColour.r, pickingColour.g, pickingColour.b);
+			unsigned int idx = node.m_nodeId;
+			float r = float(idx&0xff) / 255.0f;
+                	float g = float((idx>>8)&0xff) / 255.0f;
+                	float b = float((idx>>16)&0xff) / 255.0f;
+			glUniform3f(colour, r, g, b);
 		}
 		else {
 			glUniform3f(colour, 1.0, 1.0, 0.0);
@@ -626,6 +647,8 @@ void A3::renderGraph(const SceneNode &root, glm::mat4 modelMatrix) {
 
 void A3::renderNode(const SceneNode &node, glm::mat4 modelMatrix) {
 	if (node.m_nodeType == NodeType::GeometryNode) {
+		
+		//cout << node.m_name << endl;
 
         	const GeometryNode * geometryNode = static_cast<const GeometryNode *>(&node);
 
@@ -704,7 +727,7 @@ bool A3::mouseMoveEvent (
 	
 	if (!ImGui::IsMouseHoveringAnyWindow()) {
 		if (pickingMode == 1) {
-			if (middleMousePressed) {
+			if (rightMousePressed) {
 				for (map<unsigned int, bool>::iterator it = selected.begin(); it != selected.end(); ++it) {
 					if (it->second) {
 						if (objectToJoint.find(it->first) != objectToJoint.end()) {
@@ -778,11 +801,17 @@ bool A3::mouseButtonInputEvent (
                 	CHECK_GL_ERRORS;
 
                 	// Reassemble the object ID.
-			std::tuple<float, float, float> pickingColour = std::make_tuple(((float)buffer[0])/255.0f, ((float)buffer[1])/255.0f, ((float)buffer[2])/255.0f);
-			if (colourToId.find(pickingColour) != colourToId.end()){
-				unsigned int what = colourToId[pickingColour];
-                        	selected[what] = !selected[what];
-                	}
+			//std::tuple<float, float, float> pickingColour = std::make_tuple(((float)buffer[0])/255.0f, ((float)buffer[1])/255.0f, ((float)buffer[2])/255.0f);
+			//if (colourToId.find(pickingColour) != colourToId.end()){
+				//unsigned int what = colourToId[pickingColour];
+                        	//selected[what] = !selected[what];
+                	//}
+			unsigned int what = buffer[0] + (buffer[1] << 8) + (buffer[2] << 16);
+			if (selected.find(what) != selected.end()) {
+				selected[what] = !selected[what];
+			}
+
+
 
                 	do_picking = false;
 

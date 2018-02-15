@@ -34,7 +34,7 @@ shoulderScale:set_material(red)
 
 rightUpperArmJointMove = gr.node('rightUpperArmJointMove')
 shoulder:add_child(rightUpperArmJointMove)
-rightUpperArmJointMove :translate(-0.55, 0.0, 0.0)
+rightUpperArmJointMove :translate(-0.55, -0.03, 0.0)
 
 rightUpperArmJoint = gr.joint('rightUpperArmJoint', {0, 0, 0}, {-90, 0, 0})
 rightUpperArmJointMove:add_child(rightUpperArmJoint)
@@ -87,5 +87,69 @@ hip:translate(0.0, -0.55, 0.0)
 hipScale = gr.mesh('sphere', 'hipScale')
 hip:add_child(hipScale)
 hipScale:scale(0.35, 0.15, 0.15) 
+hipScale:set_material(green)
+
+rightThighJointMove = gr.node('rightThighJointMove')
+hip:add_child(rightThighJointMove)
+rightThighJointMove:translate(-0.20, -0.03, 0.0)
+
+rightThighJoint = gr.joint('rightThighJoint', {0, 0, 0}, {-45, 0 , 0})
+rightThighJointMove:add_child(rightThighJoint)
+
+rightThigh = gr.node('rightThigh')
+rightThighJoint:add_child(rightThigh)
+rightThigh:translate(0.0, -0.40, 0.0)
+
+rightThighScale = gr.mesh('sphere', 'rightThighScale')
+rightThigh:add_child(rightThighScale)
+rightThighScale:scale(0.13, 0.40, 0.13)
+rightThighScale:set_material(blue)
+
+rightCalfJointMove = gr.node('rightCalfJointMove')
+rightThigh:add_child(rightCalfJointMove)
+rightCalfJointMove:translate(0.0, -0.40, 0.0)
+
+rightCalfJoint = gr.joint('rightCalfJoint', {0, 0, 0}, {-45, 0 , 45})
+rightCalfJointMove:add_child(rightCalfJoint)
+
+rightCalf = gr.node('rightCalf')
+rightCalfJoint:add_child(rightCalf)
+rightCalf:translate(0.0, -0.34, 0.0)
+
+rightCalfScale = gr.mesh('sphere', 'rightCalfScale')
+rightCalf:add_child(rightCalfScale)
+rightCalfScale:scale(0.13, 0.34, 0.13)
+rightCalfScale:set_material(blue)
+
+rightFootJointMove = gr.node('rightFootJointMove')
+rightCalf:add_child(rightFootJointMove)
+rightFootJointMove:translate(0.0, -0.34, 0.0)
+
+rightFootJoint = gr.joint('rightFootJoint', {0, 0, 0}, {-135, -90, -90})
+rightFootJointMove:add_child(rightFootJoint)
+
+rightFoot = gr.node('rightFoot')
+rightFootJoint:add_child(rightFoot)
+rightFoot:translate(0.0, -0.20, 0.0)
+
+rightFootScale = gr.mesh('sphere', 'rightFootScale')
+rightFoot:add_child(rightFootScale)
+rightFootScale:scale(0.05, 0.20, 0.05)
+rightFootScale:set_material(green) 
+
+neckJointMove = gr.node('neckJointMove')
+shoulder:add_child(neckJointMove)
+neckJointMove:translate(0.0, 0.43, 0.0)
+
+neckJoint = gr.joint('neckJoint', {0, 0, 0}, {135, 180, 225})
+neckJointMove:add_child(neckJoint)
+
+neck = gr.node('neck')
+neckJoint:add_child(neck)
+neck:translate(0.0, 0.45, 0.0)
+
+neckScale = gr.mesh('sphere', 'neckScale')
+neck:add_child(neckScale)
+neckScale:scale(0.10, 0.15, 0.10) 
 
 return rootnode
