@@ -113,4 +113,6 @@ protected:
 	std::map<std::tuple<float, float, float>, unsigned int> colourToId;
 	std::map<unsigned int, SceneNode*> objectToJoint;
 	JointStack jointStack;
+	JointNode *headSideJoint;
+	unsigned int headId;
 };

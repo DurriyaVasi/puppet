@@ -234,15 +234,9 @@ leftFoot:add_child(leftFootScale)
 leftFootScale:scale(0.05, 0.20, 0.05)
 leftFootScale:set_material(green)
 
-headRotateMove = gr.node('headRotateMove')
-shoulder:add_child(headRotateMove)
-headRotateMove:translate(0.0, 0.10, 0.0)
-
-headRotate = gr.joint('headRotate', {-90, 0, 90}, {0, 0, 0});
-headRotateMove:add_child(headRotate)
-
 neckJointMove = gr.node('neckJointMove')
-headRotate:add_child(neckJointMove)
+shoulder:add_child(neckJointMove)
+neckJointMove:translate(0.0, 0.10, 0.0)
 
 neckJoint = gr.joint('neckJoint', {-45, 0, 90}, {0, 0, 0});
 neckJointMove:add_child(neckJoint)
@@ -260,11 +254,14 @@ headJointMove = gr.node('headJointMove')
 neck:add_child(headJointMove)
 headJointMove:translate(0.0, 0.07, 0.0)
 
-headJoint = gr.joint('headJoint', {-15, 0, 15}, {0, 0, 0})
+headJoint = gr.joint('headJoint', {0, 0, 0}, {-30, 0, 30})
 headJointMove:add_child(headJoint)
 
+headBob = gr.joint('headBob', {-15, 0, 15}, {0, 0, 0})
+headJoint:add_child(headBob)
+
 head = gr.node('head')
-headJoint:add_child(head)
+headBob:add_child(head)
 head:translate(0.0, 0.3, 0.0)
 
 headScale = gr.mesh('sphere', 'headScale')

@@ -45,7 +45,9 @@ A3::A3(const std::string & luaSceneFile)
 	  hasBackCull(false),
 	  hasFrontCull(false),
 	  drawCircle(true),
-	  jointStack(JointStack())
+	  jointStack(JointStack()),
+	  headSideJoint(NULL),
+	  headId(0)
 {
 	colours.push(vec3(1.0f, 0.0f, 0.0f));
 	colours.push(vec3(0.0f, 1.0f, 0.0f));
@@ -307,6 +309,10 @@ void A3::initSelected(SceneNode *root) {
 		cout << root->m_name << endl;
 
 		selected[root->m_nodeId] = false;
+
+		if (root->m_name == "headScale") {
+			headId = root->m_nodeId;
+		}
 		//idToColour[root->m_nodeId] = colours.top();
 		//colourToId[std::make_tuple(colours.top().r, colours.top().g, colours.top().b)] = root->m_nodeId;
 		//colours.pop();
@@ -321,6 +327,9 @@ void A3::initSelected(SceneNode *root) {
 				break;
 			}
         	}
+		if (root->m_name == "headJoint") {
+			headSideJoint =  static_cast<JointNode *>(root);
+		}
 	}
 
 	list<SceneNode*> children = root->children;
@@ -756,6 +765,12 @@ bool A3::mouseMoveEvent (
 				}
 				jointStack.addToStack(JointTransform(nodes, xAngles, yAngles));
 				eventHandled = true;
+			}
+			if (rightMousePressed) {
+				if (selected[headId]) {
+					headSideJoint->rotateJoint('x', yDiff);
+					headSideJoint->rotateJoint('y', yDiff);
+				}
 			}
 		}
 		else {
