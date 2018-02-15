@@ -41,7 +41,7 @@ A3::A3(const std::string & luaSceneFile)
 	  rotateNode(NULL),
 	  noTranslate(mat4()),
 	  noRotate(mat4()),
-	  hasZBuffer(false),
+	  hasZBuffer(true),
 	  hasBackCull(false),
 	  hasFrontCull(false),
 	  drawCircle(true),
@@ -306,7 +306,7 @@ void A3::initSelected(SceneNode *root) {
 
 	if (root->m_nodeType == NodeType::GeometryNode) {
 
-		cout << root->m_name << endl;
+		//cout << root->m_name << endl;
 
 		selected[root->m_nodeId] = false;
 
@@ -755,7 +755,7 @@ bool A3::mouseMoveEvent (
 						if (objectToJoint.find(it->first) != objectToJoint.end()) {
 							JointNode * joint = static_cast<JointNode *>(objectToJoint.at(it->first));
 							joint->rotateJoint('y', yDiff);
-							joint->rotateJoint('x', xDiff);
+							joint->rotateJoint('x', yDiff);
 							//jointStack.addToStack(JointTransform(joint, xDiff, yDiff)); 
 							nodes.push(joint);
 							xAngles.push(xDiff);
