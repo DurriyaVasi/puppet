@@ -6,7 +6,7 @@ To run, use the foloowing commands:
 premake4 gmake
 make clean
 make
-./A3	
+./A3 ./Assets/puppet.lua	
 
 Used computer gl34.student.cs.uwaterloo.ca
 
@@ -14,7 +14,7 @@ Used computer gl34.student.cs.uwaterloo.ca
 Manual:
 
 Did not complete trackball rotation
-
+For invalid undo/redo, print message to cerr that is shown in terminal.
 
 Additional Documentation:
 

@@ -746,32 +746,41 @@ bool A3::mouseMoveEvent (
 	
 	if (!ImGui::IsMouseHoveringAnyWindow()) {
 		if (pickingMode == 1) {
+			stack<JointNode*> nodes;
+                        stack<double> xAngles;
+                        stack<double> yAngles;
 			if (middleMousePressed) {
-				stack<JointNode*> nodes;
-				stack<double> xAngles;
-				stack<double> yAngles;
 				for (map<unsigned int, bool>::iterator it = selected.begin(); it != selected.end(); ++it) {
 					if (it->second) {
 						if (objectToJoint.find(it->first) != objectToJoint.end()) {
 							JointNode * joint = static_cast<JointNode *>(objectToJoint.at(it->first));
-							joint->rotateJoint('y', yDiff);
-							joint->rotateJoint('x', yDiff);
+							bool rotY = joint->rotateJoint('y', yDiff);
+							bool rotX = joint->rotateJoint('x', yDiff);
 							//jointStack.addToStack(JointTransform(joint, xDiff, yDiff)); 
-							nodes.push(joint);
-							xAngles.push(xDiff);
-							yAngles.push(yDiff);
+							if (rotY || rotX) {
+								nodes.push(joint);
+								xAngles.push(rotX ? yDiff : 0);
+								yAngles.push(rotY ? yDiff : 0);
+							}
 						}
 					}
 				}
-				jointStack.addToStack(JointTransform(nodes, xAngles, yAngles));
-				eventHandled = true;
 			}
 			if (rightMousePressed) {
 				if (selected[headId]) {
-					headSideJoint->rotateJoint('x', yDiff);
-					headSideJoint->rotateJoint('y', yDiff);
+					bool rotX = headSideJoint->rotateJoint('x', yDiff);
+					bool rotY = headSideJoint->rotateJoint('y', yDiff);
+					if(rotY || rotX) {
+						nodes.push(headSideJoint);
+						xAngles.push(rotX ? yDiff : 0);
+						yAngles.push(rotY ? yDiff : 0);
+					}		
 				}
 			}
+			if (!nodes.empty()) {
+				jointStack.addToStack(JointTransform(nodes, xAngles, yAngles));
+			}
+                        eventHandled = true;
 		}
 		else {
 			if (leftMousePressed) {

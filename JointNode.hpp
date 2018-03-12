@@ -12,7 +12,7 @@ public:
 
 	void reset();
 	void rotate();
-	void rotateJoint(char axis, float angle); 
+	bool rotateJoint(char axis, float angle); 
 
 	struct JointRange {
 		double min, init, max;

@@ -43,8 +43,10 @@ void JointNode::reset() {
 	rotate();
 }
 
-void JointNode::rotateJoint(char axis, float angle) {
-	
+bool JointNode::rotateJoint(char axis, float angle) {
+	float oldX = angleX;
+	float oldY = angleY;
+	bool ret = true;
 	switch(axis) {
 		case 'x':
 			angleX = angleX + angle;
@@ -53,6 +55,9 @@ void JointNode::rotateJoint(char axis, float angle) {
 			}
 			else if (angleX < m_joint_x.min) {
 				angleX = m_joint_x.min;
+			}
+			if (angleX == oldX) {
+				ret = false;
 			}
 			break;
 		case 'y':
@@ -63,11 +68,15 @@ void JointNode::rotateJoint(char axis, float angle) {
 			else if (angleY < m_joint_y.min) {
 				angleY = m_joint_y.min;
 			}
+			if (angleY == oldY) {
+				ret = false;
+			}
 			break;
 		default:
 			break;
 	}
 	rotate();
+	return ret;
 }
 
 void JointNode::rotate() {
